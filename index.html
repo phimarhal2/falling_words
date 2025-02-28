@@ -63,11 +63,116 @@
             margin: -2px; /* Slightly reduced negative margin */
             letter-spacing: -3px; /* Slightly reduced negative letter spacing */
         }
+        
+        /* L-shaped corners container */
+        #cornerContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        /* L-shaped corner styling */
+        .l-corner {
+            position: absolute;
+            background: transparent;
+            z-index: 999;
+            transition: none;
+        }
+        
+        /* Specific transitions for crushing (faster) */
+        .crushing .l-corner {
+            transition: all 0.1s ease-in;
+        }
+        
+        /* Specific transitions for reset (slower) */
+        .resetting .l-corner {
+            transition: all 0.5s ease-out;
+        }
+        
+        /* Horizontal segments of L corners */
+        .l-corner-h {
+            height: 4px;
+            background-color: #FFD700;
+            border-radius: 2px;
+        }
+        
+        /* Vertical segments of L corners */
+        .l-corner-v {
+            width: 4px;
+            background-color: #FFD700;
+            border-radius: 2px;
+        }
+        
+        /* Top left corner */
+        #topLeftH {
+            top: 0;
+            left: 0;
+            transform-origin: left;
+        }
+        
+        #topLeftV {
+            top: 0;
+            left: 0;
+            transform-origin: top;
+        }
+        
+        /* Top right corner */
+        #topRightH {
+            top: 0;
+            right: 0;
+            transform-origin: right;
+        }
+        
+        #topRightV {
+            top: 0;
+            right: 0;
+            transform-origin: top;
+        }
+        
+        /* Bottom right corner */
+        #bottomRightH {
+            bottom: 0;
+            right: 0;
+            transform-origin: right;
+        }
+        
+        #bottomRightV {
+            bottom: 0;
+            right: 0;
+            transform-origin: bottom;
+        }
+        
+        /* Bottom left corner */
+        #bottomLeftH {
+            bottom: 0;
+            left: 0;
+            transform-origin: left;
+        }
+        
+        #bottomLeftV {
+            bottom: 0;
+            left: 0;
+            transform-origin: bottom;
+        }
     </style>
 </head>
 <body>
     <button id="crushBtn">CRUSH IT!</button>
     <div id="activeWord"></div>
+    <div id="cornerContainer">
+        <div id="topLeftH" class="l-corner l-corner-h"></div>
+        <div id="topLeftV" class="l-corner l-corner-v"></div>
+        <div id="topRightH" class="l-corner l-corner-h"></div>
+        <div id="topRightV" class="l-corner l-corner-v"></div>
+        <div id="bottomRightH" class="l-corner l-corner-h"></div>
+        <div id="bottomRightV" class="l-corner l-corner-v"></div>
+        <div id="bottomLeftH" class="l-corner l-corner-h"></div>
+        <div id="bottomLeftV" class="l-corner l-corner-v"></div>
+    </div>
     <script>
         // Initialize Matter.js
         const Engine = Matter.Engine,
@@ -103,98 +208,231 @@
         const words = ['SACRIFICE', 'DESTROY', 'OBLITERATE', 'ANNIHILATE', 'CRUSH', 'DEMOLISH', 'SHATTER', 'BREAK'];
         let currentWord = '';
         let isCrushed = false;
+        let isAnimating = false;
+        
+        // L-corner configuration
+        const cornerConfig = {
+            longSegment: 50,    // Length of long L segments (reduced from 60)
+            shortSegment: 25,   // Length of short L segments (reduced from 30)
+            expandedSize: 200,  // Size of expanded square
+            crushSize: 90,      // Size of crushed square (increased to avoid touching)
+            animationDelay: 50, // Delay before word crush after corners move
+            resetDelay: 500     // Delay for reset animation
+        };
+        
+        // Function to position the L corners around the active word
+        function positionCorners(expanded = true) {
+            const wordContainer = document.getElementById('activeWord');
+            const rect = wordContainer.getBoundingClientRect();
+            
+            // Calculate the center of the word
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Calculate the square size based on state
+            const squareSize = expanded ? cornerConfig.expandedSize : cornerConfig.crushSize;
+            const halfSize = squareSize / 2;
+            
+            // Calculate the positions for the corners
+            const left = centerX - halfSize;
+            const right = centerX + halfSize;
+            const top = centerY - halfSize;
+            const bottom = centerY + halfSize;
+            
+            // Position and size the L corners
+            // Top Left Corner (long horizontal, short vertical)
+            const topLeftH = document.getElementById('topLeftH');
+            const topLeftV = document.getElementById('topLeftV');
+            topLeftH.style.top = `${top}px`;
+            topLeftH.style.left = `${left}px`;
+            topLeftH.style.width = `${cornerConfig.longSegment}px`;
+            
+            topLeftV.style.top = `${top}px`;
+            topLeftV.style.left = `${left}px`;
+            topLeftV.style.height = `${cornerConfig.shortSegment}px`;
+            
+            // Top Right Corner (short horizontal, long vertical)
+            const topRightH = document.getElementById('topRightH');
+            const topRightV = document.getElementById('topRightV');
+            topRightH.style.top = `${top}px`;
+            topRightH.style.right = `${window.innerWidth - right}px`;
+            topRightH.style.width = `${cornerConfig.shortSegment}px`;
+            
+            topRightV.style.top = `${top}px`;
+            topRightV.style.right = `${window.innerWidth - right}px`;
+            topRightV.style.height = `${cornerConfig.longSegment}px`;
+            
+            // Bottom Right Corner (long horizontal, short vertical)
+            const bottomRightH = document.getElementById('bottomRightH');
+            const bottomRightV = document.getElementById('bottomRightV');
+            bottomRightH.style.bottom = `${window.innerHeight - bottom}px`;
+            bottomRightH.style.right = `${window.innerWidth - right}px`;
+            bottomRightH.style.width = `${cornerConfig.longSegment}px`;
+            
+            bottomRightV.style.bottom = `${window.innerHeight - bottom}px`;
+            bottomRightV.style.right = `${window.innerWidth - right}px`;
+            bottomRightV.style.height = `${cornerConfig.shortSegment}px`;
+            
+            // Bottom Left Corner (short horizontal, long vertical)
+            const bottomLeftH = document.getElementById('bottomLeftH');
+            const bottomLeftV = document.getElementById('bottomLeftV');
+            bottomLeftH.style.bottom = `${window.innerHeight - bottom}px`;
+            bottomLeftH.style.left = `${left}px`;
+            bottomLeftH.style.width = `${cornerConfig.shortSegment}px`;
+            
+            bottomLeftV.style.bottom = `${window.innerHeight - bottom}px`;
+            bottomLeftV.style.left = `${left}px`;
+            bottomLeftV.style.height = `${cornerConfig.longSegment}px`;
+        }
 
         function displayNewWord() {
             currentWord = words[Math.floor(Math.random() * words.length)];
             const wordContainer = document.getElementById('activeWord');
+            
+            // Clear any transition classes
+            document.body.classList.remove('crushing');
+            document.body.classList.remove('resetting');
+            
+            // Update the word content
             wordContainer.innerHTML = currentWord.split('').map(char => 
                 `<span class="letter">${char}</span>`
             ).join('');
             wordContainer.classList.remove('crushed');
             document.getElementById('crushBtn').textContent = 'CRUSH IT!';
             isCrushed = false;
+            
+            // Wait for the DOM to update before positioning corners
+            // Use requestAnimationFrame for smoother timing
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    positionCorners(true);
+                });
+            });
         }
 
         function crushWord() {
-            const wordContainer = document.getElementById('activeWord');
-            wordContainer.classList.add('crushed');
+            if (isAnimating) return; // Prevent multiple animations
+            isAnimating = true;
             
-            // Apply more dramatic random transformations to each letter
-            wordContainer.querySelectorAll('.letter').forEach(letter => {
-                // Moderate rotation (-15 to 15 degrees)
-                const rotation = (Math.random() - 0.5) * 30;
+            const wordContainer = document.getElementById('activeWord');
+            document.getElementById('crushBtn').disabled = true;
+            
+            // Add crushing class to body for faster animation
+            document.body.classList.add('crushing');
+            document.body.classList.remove('resetting');
+            
+            // First animate the corners to the crushed position
+            positionCorners(false);
+            
+            // After a delay, crush the word
+            setTimeout(() => {
+                wordContainer.classList.add('crushed');
                 
-                // Moderate skewing (-25 to 25 degrees)
-                const skewX = (Math.random() - 0.5) * 50;
-                const skewY = (Math.random() - 0.5) * 50;
+                // Apply transformations to each letter
+                wordContainer.querySelectorAll('.letter').forEach(letter => {
+                    // Moderate rotation (-15 to 15 degrees)
+                    const rotation = (Math.random() - 0.5) * 30;
+                    
+                    // Moderate skewing (-25 to 25 degrees)
+                    const skewX = (Math.random() - 0.5) * 50;
+                    const skewY = (Math.random() - 0.5) * 50;
+                    
+                    // Add random vertical scaling (0.7 to 1.0) - never scale up
+                    const scaleY = 0.7 + Math.random() * 0.3;
+                    
+                    // Add random translation - more extreme horizontal movement
+                    const translateX = (Math.random() - 0.5) * 20 + 'px';
+                    const translateY = (Math.random() - 0.5) * 15 + 'px';
+                    
+                    // Slightly randomize opacity
+                    const opacity = 0.8 + Math.random() * 0.2;
+                    
+                    letter.style.setProperty('--rotation', `${rotation}deg`);
+                    letter.style.setProperty('--skewX', `${skewX}deg`);
+                    letter.style.setProperty('--skewY', `${skewY}deg`);
+                    letter.style.setProperty('--scaleY', scaleY);
+                    letter.style.setProperty('--translateX', translateX);
+                    letter.style.setProperty('--translateY', translateY);
+                    letter.style.setProperty('--opacity', opacity);
+                });
                 
-                // Add random vertical scaling (0.7 to 1.0) - never scale up
-                const scaleY = 0.7 + Math.random() * 0.3;
+                // Update button state
+                document.getElementById('crushBtn').textContent = 'DROP IT!';
+                isCrushed = true;
                 
-                // Add random translation - more extreme horizontal movement
-                const translateX = (Math.random() - 0.5) * 20 + 'px';
-                const translateY = (Math.random() - 0.5) * 15 + 'px';
-                
-                // Slightly randomize opacity
-                const opacity = 0.8 + Math.random() * 0.2;
-                
-                letter.style.setProperty('--rotation', `${rotation}deg`);
-                letter.style.setProperty('--skewX', `${skewX}deg`);
-                letter.style.setProperty('--skewY', `${skewY}deg`);
-                letter.style.setProperty('--scaleY', scaleY);
-                letter.style.setProperty('--translateX', translateX);
-                letter.style.setProperty('--translateY', translateY);
-                letter.style.setProperty('--opacity', opacity);
-            });
-
-            document.getElementById('crushBtn').textContent = 'DROP IT!';
-            isCrushed = true;
+                // After a delay, enable the button again
+                setTimeout(() => {
+                    document.getElementById('crushBtn').disabled = false;
+                    isAnimating = false;
+                }, 400);
+            }, cornerConfig.animationDelay);
         }
 
         function createFallingWord() {
+            if (isAnimating) return; // Prevent multiple animations
+            isAnimating = true;
+            
             const wordContainer = document.getElementById('activeWord');
             const rect = wordContainer.getBoundingClientRect();
             const color = '#FFD700';
             
-            // Create a body for the word
-            const body = Bodies.rectangle(
-                rect.x + rect.width / 2,
-                rect.y + rect.height / 2,
-                rect.width, // The width is already correct as it reflects the crushed state from the DOM
-                rect.height,
-                {
-                    render: {
-                        fillStyle: 'transparent',
-                        lineWidth: 0
-                    },
-                    restitution: 0.6,
-                    friction: 0.1,
-                    frictionAir: 0.001,
-                    word: currentWord,
-                    color: color,
-                    crushed: true,
-                    // Store the letter transformations
-                    letterTransforms: Array.from(wordContainer.querySelectorAll('.letter')).map(letter => ({
-                        rotation: letter.style.getPropertyValue('--rotation'),
-                        skewX: letter.style.getPropertyValue('--skewX'),
-                        skewY: letter.style.getPropertyValue('--skewY'),
-                        scaleY: letter.style.getPropertyValue('--scaleY'),
-                        translateX: letter.style.getPropertyValue('--translateX'),
-                        translateY: letter.style.getPropertyValue('--translateY'),
-                        opacity: letter.style.getPropertyValue('--opacity')
-                    }))
-                }
-            );
-
-            // Add random initial velocities
-            Matter.Body.setVelocity(body, {
-                x: (Math.random() - 0.5) * 5,
-                y: -2
-            });
-            Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.2);
+            document.getElementById('crushBtn').disabled = true;
             
-            World.add(engine.world, body);
-            displayNewWord();
+            // Add resetting class to body for slower animation
+            document.body.classList.add('resetting');
+            document.body.classList.remove('crushing');
+            
+            // First animate the corners back to expanded position
+            positionCorners(true);
+            
+            // Create a body for the word after a delay
+            setTimeout(() => {
+                // Create a body for the word
+                const body = Bodies.rectangle(
+                    rect.x + rect.width / 2,
+                    rect.y + rect.height / 2,
+                    rect.width,
+                    rect.height,
+                    {
+                        render: {
+                            fillStyle: 'transparent',
+                            lineWidth: 0
+                        },
+                        restitution: 0.6,
+                        friction: 0.1,
+                        frictionAir: 0.001,
+                        word: currentWord,
+                        color: color,
+                        crushed: true,
+                        // Store the letter transformations
+                        letterTransforms: Array.from(wordContainer.querySelectorAll('.letter')).map(letter => ({
+                            rotation: letter.style.getPropertyValue('--rotation'),
+                            skewX: letter.style.getPropertyValue('--skewX'),
+                            skewY: letter.style.getPropertyValue('--skewY'),
+                            scaleY: letter.style.getPropertyValue('--scaleY'),
+                            translateX: letter.style.getPropertyValue('--translateX'),
+                            translateY: letter.style.getPropertyValue('--translateY'),
+                            opacity: letter.style.getPropertyValue('--opacity')
+                        }))
+                    }
+                );
+
+                // Add random initial velocities
+                Matter.Body.setVelocity(body, {
+                    x: (Math.random() - 0.5) * 5,
+                    y: -2
+                });
+                Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.2);
+                
+                World.add(engine.world, body);
+                
+                // Display a new word with proper positioning
+                displayNewWord();
+                
+                // Re-enable the button
+                document.getElementById('crushBtn').disabled = false;
+                isAnimating = false;
+            }, cornerConfig.resetDelay);
         }
 
         // Custom render function for the words
@@ -265,10 +503,12 @@
 
         // Button click handler
         document.getElementById('crushBtn').addEventListener('click', function() {
-            if (!isCrushed) {
-                crushWord();
-            } else {
-                createFallingWord();
+            if (!isAnimating) {
+                if (!isCrushed) {
+                    crushWord();
+                } else {
+                    createFallingWord();
+                }
             }
         });
 
@@ -287,6 +527,11 @@
             walls[1].position.y = window.innerHeight/2;
             walls[2].position.x = window.innerWidth + 30;
             walls[2].position.y = window.innerHeight/2;
+            
+            // Reposition corners based on current state
+            if (!isAnimating) {
+                positionCorners(!isCrushed);
+            }
         });
     </script>
 </body>
