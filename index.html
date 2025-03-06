@@ -63,7 +63,13 @@
             z-index: 1000; /* Ensure it's above other elements */
             pointer-events: auto; /* Ensure it receives click events */
             transform: scaleX(1); /* Default scale */
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .active-word.new-word {
+            transition: none;
         }
         
         .active-word:hover {
@@ -327,8 +333,8 @@
             compactSize: 80,       // Size of the square in compact state
             longSegment: 40,       // Length of the long segment of the L
             shortSegment: 20,      // Length of the short segment of the L
-            animationDelay: 200,   // Delay before crushing the word
-            resetDelay: 300        // Delay before creating the falling word
+            animationDelay: 10,   // Delay before crushing the word
+            resetDelay: 800        // Delay before creating the falling word
         };
         
         // Function to get two different random words
@@ -365,7 +371,10 @@
                 `<span class="letter">${char}</span>`
             ).join('');
             wordContainer1.classList.remove('crushed', 'fading');
+            wordContainer1.classList.add('new-word'); // Add new-word class
             wordContainer1.style.transform = ''; // Reset any transforms
+            wordContainer1.style.visibility = 'visible'; // Ensure visibility
+            wordContainer1.style.opacity = '1'; // Reset opacity
             isCrushed1 = false;
             
             // Update word 2
@@ -375,7 +384,10 @@
                 `<span class="letter">${char}</span>`
             ).join('');
             wordContainer2.classList.remove('crushed', 'fading');
+            wordContainer2.classList.add('new-word'); // Add new-word class
             wordContainer2.style.transform = ''; // Reset any transforms
+            wordContainer2.style.visibility = 'visible'; // Ensure visibility
+            wordContainer2.style.opacity = '1'; // Reset opacity
             isCrushed2 = false;
             
             // Wait for the DOM to update before positioning corners
@@ -383,6 +395,13 @@
                 requestAnimationFrame(() => {
                     positionCorners(1, true);
                     positionCorners(2, true);
+                    
+                    // Remove the new-word class after a short delay
+                    // This allows transitions to work again for future animations
+                    setTimeout(() => {
+                        wordContainer1.classList.remove('new-word');
+                        wordContainer2.classList.remove('new-word');
+                    }, 100);
                 });
             });
         }
@@ -459,7 +478,7 @@
                 // After a delay, create the falling word
                 setTimeout(() => {
                     createFallingWord(wordIndex);
-                }, 800);
+                }, 400); // Reduced from 400ms to 250ms for a more immediate transition
             }, cornerConfig.animationDelay);
         }
         
@@ -469,19 +488,18 @@
             const word = wordIndex === 1 ? currentWord1 : currentWord2;
             const color = '#FFD700';
             
-            // Add resetting class to body for slower animation
-            document.body.classList.add('resetting');
-            document.body.classList.remove('crushing');
+            // CRITICAL: Store letter transforms BEFORE hiding the word
+            const letterTransforms = Array.from(wordContainer.querySelectorAll('.letter')).map(letter => ({
+                rotation: letter.style.getPropertyValue('--rotation'),
+                skewX: letter.style.getPropertyValue('--skewX'),
+                skewY: letter.style.getPropertyValue('--skewY'),
+                scaleY: letter.style.getPropertyValue('--scaleY'),
+                translateX: letter.style.getPropertyValue('--translateX'),
+                translateY: letter.style.getPropertyValue('--translateY'),
+                opacity: letter.style.getPropertyValue('--opacity')
+            }));
             
-            // First animate the corners back to expanded position
-            positionCorners(wordIndex, true);
-            
-            // Hide the crushed word immediately before creating the falling word
-            // This ensures no overlap between crushed and falling states
-            wordContainer.style.visibility = 'hidden';
-            
-            // Create a body for the word immediately
-            // Create a body for the word
+            // Create the physics body BEFORE hiding the word
             const body = Bodies.rectangle(
                 rect.x + rect.width / 2,
                 rect.y + rect.height / 2,
@@ -498,16 +516,7 @@
                     word: word,
                     color: color,
                     crushed: true,
-                    // Store the letter transformations
-                    letterTransforms: Array.from(wordContainer.querySelectorAll('.letter')).map(letter => ({
-                        rotation: letter.style.getPropertyValue('--rotation'),
-                        skewX: letter.style.getPropertyValue('--skewX'),
-                        skewY: letter.style.getPropertyValue('--skewY'),
-                        scaleY: letter.style.getPropertyValue('--scaleY'),
-                        translateX: letter.style.getPropertyValue('--translateX'),
-                        translateY: letter.style.getPropertyValue('--translateY'),
-                        opacity: letter.style.getPropertyValue('--opacity')
-                    }))
+                    letterTransforms: letterTransforms
                 }
             );
 
@@ -518,13 +527,26 @@
             });
             Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.2);
             
+            // CRITICAL: Hide the word with NO TRANSITION immediately before adding the body
+            wordContainer.classList.add('new-word'); // Disable transitions
+            wordContainer.style.visibility = 'hidden';
+            wordContainer.style.opacity = '0';
+            
+            // Add the body to the world in the same frame
             World.add(engine.world, body);
+            
+            // Now start the corner animation
+            document.body.classList.add('resetting');
+            document.body.classList.remove('crushing');
+            positionCorners(wordIndex, true);
             
             // Display new words after the corner animation completes
             setTimeout(() => {
                 // Reset visibility for both word containers
                 document.getElementById('activeWord1').style.visibility = 'visible';
+                document.getElementById('activeWord1').style.opacity = '1';
                 document.getElementById('activeWord2').style.visibility = 'visible';
+                document.getElementById('activeWord2').style.opacity = '1';
                 
                 // Display new words
                 displayNewWords();
