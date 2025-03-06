@@ -631,7 +631,15 @@
             const context = render.context;
             const bodies = Matter.Composite.allBodies(engine.world);
             
-            context.font = 'bold 48px Arial';
+            // Match the CSS font exactly: 3rem bold
+            // 3rem is approximately 48px, but let's make it exact
+            // Get the computed style from the active word to match exactly
+            const computedStyle = window.getComputedStyle(document.getElementById('activeWord1'));
+            const fontSize = computedStyle.fontSize;
+            const fontWeight = computedStyle.fontWeight;
+            const fontFamily = computedStyle.fontFamily || 'Arial';
+            
+            context.font = `${fontWeight} ${fontSize} ${fontFamily}`;
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             
@@ -676,6 +684,7 @@
                             context.scale(1, scaleY);
                             context.translate(translateX, translateY);
                             
+                            // Use exact gold color from CSS
                             context.fillStyle = `rgba(255, 215, 0, ${opacity})`;
                             context.fillText(char, 0, 0);
                             
@@ -683,7 +692,8 @@
                         });
                     } else {
                         // For normal words, just render the whole word
-                        context.fillStyle = body.color;
+                        // Use exact gold color from CSS
+                        context.fillStyle = '#FFD700';
                         context.fillText(body.word, 0, 0);
                     }
                     
