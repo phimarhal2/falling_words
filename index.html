@@ -9,69 +9,103 @@
         body {
             margin: 0;
             padding: 0;
+            background-color: #121212;
+            color: #FFD700;
+            font-family: 'Impact', sans-serif;
             overflow: hidden;
-            background: #1a1a1a;
-            font-family: Arial, sans-serif;
-        }
-        canvas {
-            width: 100%;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
+        
         #crushBtn {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
             padding: 10px 20px;
-            font-size: 16px;
-            background: #FF4136;
+            background: #FF0000;
             color: white;
             border: none;
             border-radius: 5px;
+            font-size: 18px;
             cursor: pointer;
             z-index: 1000;
-            transition: background-color 0.3s;
+            font-family: 'Impact', sans-serif;
         }
+        
         #crushBtn:hover {
             background: #E7261D;
         }
-        #activeWord {
+        
+        .word-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
             position: fixed;
             top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 36px;
-            color: #FFD700;
-            font-family: Arial, sans-serif;
+            z-index: 1000; /* Ensure it's above other elements */
+        }
+        
+        .active-word {
+            position: relative;
+            width: 40%;
+            max-width: 400px;
+            text-align: center;
+            font-size: 3rem;
             font-weight: bold;
-            z-index: 1000;
-            display: flex;
-            gap: 2px;
+            color: #FFD700;
+            padding: 0;
+            border: none;
+            background: transparent;
+            z-index: 1000; /* Ensure it's above other elements */
+            pointer-events: auto; /* Ensure it receives click events */
+            transform: scaleX(1); /* Default scale */
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .active-word.new-word {
+            transition: none;
+        }
+        
+        .active-word:hover {
+            cursor: pointer;
+        }
+        
+        .active-word.crushed {
+            transform: scaleX(0.4); /* Horizontal compression when crushed */
+        }
+        
+        .active-word .letter {
+            display: inline-block;
             transition: all 0.3s ease-in-out;
         }
-        .letter {
-            transition: all 0.3s ease-in-out;
-        }
-        .crushed {
-            transform: scaleX(0.4); /* More extreme horizontal compression */
-        }
-        .crushed .letter {
-            filter: blur(0.5px);
+        
+        .active-word.crushed .letter {
             transform-origin: center;
             transform: rotate(var(--rotation)) skew(var(--skewX), var(--skewY)) translate(var(--translateX), var(--translateY)) scaleY(var(--scaleY));
             opacity: var(--opacity);
             margin: -2px; /* Slightly reduced negative margin */
             letter-spacing: -3px; /* Slightly reduced negative letter spacing */
         }
+
+        .active-word.fading {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
         
         /* L-shaped corners container */
-        #cornerContainer {
+        .container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
+            pointer-events: none; /* Don't block clicks */
             z-index: 999;
         }
         
@@ -108,71 +142,150 @@
         }
         
         /* Top left corner */
-        #topLeftH {
+        #topLeftH1 {
             top: 0;
             left: 0;
             transform-origin: left;
         }
         
-        #topLeftV {
+        #topLeftV1 {
             top: 0;
             left: 0;
             transform-origin: top;
         }
         
         /* Top right corner */
-        #topRightH {
+        #topRightH1 {
             top: 0;
             right: 0;
             transform-origin: right;
         }
         
-        #topRightV {
+        #topRightV1 {
             top: 0;
             right: 0;
             transform-origin: top;
         }
         
         /* Bottom right corner */
-        #bottomRightH {
+        #bottomRightH1 {
             bottom: 0;
             right: 0;
             transform-origin: right;
         }
         
-        #bottomRightV {
+        #bottomRightV1 {
             bottom: 0;
             right: 0;
             transform-origin: bottom;
         }
         
         /* Bottom left corner */
-        #bottomLeftH {
+        #bottomLeftH1 {
             bottom: 0;
             left: 0;
             transform-origin: left;
         }
         
-        #bottomLeftV {
+        #bottomLeftV1 {
             bottom: 0;
             left: 0;
             transform-origin: bottom;
         }
+        
+        /* Top left corner */
+        #topLeftH2 {
+            top: 0;
+            left: 0;
+            transform-origin: left;
+        }
+        
+        #topLeftV2 {
+            top: 0;
+            left: 0;
+            transform-origin: top;
+        }
+        
+        /* Top right corner */
+        #topRightH2 {
+            top: 0;
+            right: 0;
+            transform-origin: right;
+        }
+        
+        #topRightV2 {
+            top: 0;
+            right: 0;
+            transform-origin: top;
+        }
+        
+        /* Bottom right corner */
+        #bottomRightH2 {
+            bottom: 0;
+            right: 0;
+            transform-origin: right;
+        }
+        
+        #bottomRightV2 {
+            bottom: 0;
+            right: 0;
+            transform-origin: bottom;
+        }
+        
+        /* Bottom left corner */
+        #bottomLeftH2 {
+            bottom: 0;
+            left: 0;
+            transform-origin: left;
+        }
+        
+        #bottomLeftV2 {
+            bottom: 0;
+            left: 0;
+            transform-origin: bottom;
+        }
+        
+        /* Clickable areas */
+        #clickArea1, #clickArea2 {
+            background-color: transparent;
+            transition: background-color 0.2s ease;
+        }
+        
+        #clickArea1:hover, #clickArea2:hover {
+            background-color: rgba(255, 215, 0, 0.1);
+        }
     </style>
 </head>
 <body>
-    <button id="crushBtn">CRUSH IT!</button>
-    <div id="activeWord"></div>
-    <div id="cornerContainer">
-        <div id="topLeftH" class="l-corner l-corner-h"></div>
-        <div id="topLeftV" class="l-corner l-corner-v"></div>
-        <div id="topRightH" class="l-corner l-corner-h"></div>
-        <div id="topRightV" class="l-corner l-corner-v"></div>
-        <div id="bottomRightH" class="l-corner l-corner-h"></div>
-        <div id="bottomRightV" class="l-corner l-corner-v"></div>
-        <div id="bottomLeftH" class="l-corner l-corner-h"></div>
-        <div id="bottomLeftV" class="l-corner l-corner-v"></div>
+    <div class="word-container">
+        <div id="activeWord1" class="active-word"></div>
+        <div id="activeWord2" class="active-word"></div>
     </div>
+    <div class="container">
+        <!-- L-shaped corners for word 1 -->
+        <div id="topLeftH1" class="l-corner l-corner-h"></div>
+        <div id="topLeftV1" class="l-corner l-corner-v"></div>
+        <div id="topRightH1" class="l-corner l-corner-h"></div>
+        <div id="topRightV1" class="l-corner l-corner-v"></div>
+        <div id="bottomLeftH1" class="l-corner l-corner-h"></div>
+        <div id="bottomLeftV1" class="l-corner l-corner-v"></div>
+        <div id="bottomRightH1" class="l-corner l-corner-h"></div>
+        <div id="bottomRightV1" class="l-corner l-corner-v"></div>
+        
+        <!-- L-shaped corners for word 2 -->
+        <div id="topLeftH2" class="l-corner l-corner-h"></div>
+        <div id="topLeftV2" class="l-corner l-corner-v"></div>
+        <div id="topRightH2" class="l-corner l-corner-h"></div>
+        <div id="topRightV2" class="l-corner l-corner-v"></div>
+        <div id="bottomLeftH2" class="l-corner l-corner-h"></div>
+        <div id="bottomLeftV2" class="l-corner l-corner-v"></div>
+        <div id="bottomRightH2" class="l-corner l-corner-h"></div>
+        <div id="bottomRightV2" class="l-corner l-corner-v"></div>
+    </div>
+    
+    <!-- Clickable areas that match the L-boxes -->
+    <div id="clickArea1" style="position: absolute; cursor: pointer; z-index: 1001;"></div>
+    <div id="clickArea2" style="position: absolute; cursor: pointer; z-index: 1001;"></div>
     <script>
         // Initialize Matter.js
         const Engine = Matter.Engine,
@@ -205,124 +318,119 @@
         World.add(engine.world, walls);
 
         // Words to randomly choose from
-        const words = ['SACRIFICE', 'DESTROY', 'OBLITERATE', 'ANNIHILATE', 'CRUSH', 'DEMOLISH', 'SHATTER', 'BREAK'];
-        let currentWord = '';
-        let isCrushed = false;
+        const words = ['SACRIFICE', 'DESTROY', 'OBLITERATE', 'ANNIHILATE', 'CRUSH', 'DEMOLISH', 'SHATTER', 'BREAK', 
+                      'ELIMINATE', 'ERADICATE', 'TERMINATE', 'DEVASTATE', 'PULVERIZE', 'SMASH', 'WRECK', 'RUIN'];
+        let currentWord1 = '';
+        let currentWord2 = '';
+        let isCrushed1 = false;
+        let isCrushed2 = false;
         let isAnimating = false;
+        let selectedWordIndex = null;
         
-        // L-corner configuration
+        // Configuration for the L corners
         const cornerConfig = {
-            longSegment: 50,    // Length of long L segments (reduced from 60)
-            shortSegment: 25,   // Length of short L segments (reduced from 30)
-            expandedSize: 200,  // Size of expanded square
-            crushSize: 90,      // Size of crushed square (increased to avoid touching)
-            animationDelay: 50, // Delay before word crush after corners move
-            resetDelay: 500     // Delay for reset animation
+            expandedSize: 120,      // Size of the square in expanded state
+            compactSize: 80,       // Size of the square in compact state
+            longSegment: 40,       // Length of the long segment of the L
+            shortSegment: 20,      // Length of the short segment of the L
+            animationDelay: 10,   // Delay before crushing the word
+            resetDelay: 800        // Delay before creating the falling word
         };
         
-        // Function to position the L corners around the active word
-        function positionCorners(expanded = true) {
-            const wordContainer = document.getElementById('activeWord');
-            const rect = wordContainer.getBoundingClientRect();
+        // Function to get two different random words
+        function getRandomWords() {
+            // Create a copy of the words array to avoid duplicates
+            const wordsCopy = [...words];
             
-            // Calculate the center of the word
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
+            // Get a random word for the first position
+            const randomIndex1 = Math.floor(Math.random() * wordsCopy.length);
+            const word1 = wordsCopy[randomIndex1];
             
-            // Calculate the square size based on state
-            const squareSize = expanded ? cornerConfig.expandedSize : cornerConfig.crushSize;
-            const halfSize = squareSize / 2;
+            // Remove the first word from the array
+            wordsCopy.splice(randomIndex1, 1);
             
-            // Calculate the positions for the corners
-            const left = centerX - halfSize;
-            const right = centerX + halfSize;
-            const top = centerY - halfSize;
-            const bottom = centerY + halfSize;
+            // Get a random word for the second position
+            const randomIndex2 = Math.floor(Math.random() * wordsCopy.length);
+            const word2 = wordsCopy[randomIndex2];
             
-            // Position and size the L corners
-            // Top Left Corner (long horizontal, short vertical)
-            const topLeftH = document.getElementById('topLeftH');
-            const topLeftV = document.getElementById('topLeftV');
-            topLeftH.style.top = `${top}px`;
-            topLeftH.style.left = `${left}px`;
-            topLeftH.style.width = `${cornerConfig.longSegment}px`;
-            
-            topLeftV.style.top = `${top}px`;
-            topLeftV.style.left = `${left}px`;
-            topLeftV.style.height = `${cornerConfig.shortSegment}px`;
-            
-            // Top Right Corner (short horizontal, long vertical)
-            const topRightH = document.getElementById('topRightH');
-            const topRightV = document.getElementById('topRightV');
-            topRightH.style.top = `${top}px`;
-            topRightH.style.right = `${window.innerWidth - right}px`;
-            topRightH.style.width = `${cornerConfig.shortSegment}px`;
-            
-            topRightV.style.top = `${top}px`;
-            topRightV.style.right = `${window.innerWidth - right}px`;
-            topRightV.style.height = `${cornerConfig.longSegment}px`;
-            
-            // Bottom Right Corner (long horizontal, short vertical)
-            const bottomRightH = document.getElementById('bottomRightH');
-            const bottomRightV = document.getElementById('bottomRightV');
-            bottomRightH.style.bottom = `${window.innerHeight - bottom}px`;
-            bottomRightH.style.right = `${window.innerWidth - right}px`;
-            bottomRightH.style.width = `${cornerConfig.longSegment}px`;
-            
-            bottomRightV.style.bottom = `${window.innerHeight - bottom}px`;
-            bottomRightV.style.right = `${window.innerWidth - right}px`;
-            bottomRightV.style.height = `${cornerConfig.shortSegment}px`;
-            
-            // Bottom Left Corner (short horizontal, long vertical)
-            const bottomLeftH = document.getElementById('bottomLeftH');
-            const bottomLeftV = document.getElementById('bottomLeftV');
-            bottomLeftH.style.bottom = `${window.innerHeight - bottom}px`;
-            bottomLeftH.style.left = `${left}px`;
-            bottomLeftH.style.width = `${cornerConfig.shortSegment}px`;
-            
-            bottomLeftV.style.bottom = `${window.innerHeight - bottom}px`;
-            bottomLeftV.style.left = `${left}px`;
-            bottomLeftV.style.height = `${cornerConfig.longSegment}px`;
+            return [word1, word2];
         }
-
-        function displayNewWord() {
-            currentWord = words[Math.floor(Math.random() * words.length)];
-            const wordContainer = document.getElementById('activeWord');
+        
+        // Function to display new words in both containers
+        function displayNewWords() {
+            const [word1, word2] = getRandomWords();
             
             // Clear any transition classes
             document.body.classList.remove('crushing');
             document.body.classList.remove('resetting');
             
-            // Update the word content
-            wordContainer.innerHTML = currentWord.split('').map(char => 
+            // Update word 1
+            currentWord1 = word1;
+            const wordContainer1 = document.getElementById('activeWord1');
+            wordContainer1.innerHTML = word1.split('').map(char => 
                 `<span class="letter">${char}</span>`
             ).join('');
-            wordContainer.classList.remove('crushed');
-            document.getElementById('crushBtn').textContent = 'CRUSH IT!';
-            isCrushed = false;
+            wordContainer1.classList.remove('crushed', 'fading');
+            wordContainer1.classList.add('new-word'); // Add new-word class
+            wordContainer1.style.transform = ''; // Reset any transforms
+            wordContainer1.style.visibility = 'visible'; // Ensure visibility
+            wordContainer1.style.opacity = '1'; // Reset opacity
+            isCrushed1 = false;
+            
+            // Update word 2
+            currentWord2 = word2;
+            const wordContainer2 = document.getElementById('activeWord2');
+            wordContainer2.innerHTML = word2.split('').map(char => 
+                `<span class="letter">${char}</span>`
+            ).join('');
+            wordContainer2.classList.remove('crushed', 'fading');
+            wordContainer2.classList.add('new-word'); // Add new-word class
+            wordContainer2.style.transform = ''; // Reset any transforms
+            wordContainer2.style.visibility = 'visible'; // Ensure visibility
+            wordContainer2.style.opacity = '1'; // Reset opacity
+            isCrushed2 = false;
             
             // Wait for the DOM to update before positioning corners
-            // Use requestAnimationFrame for smoother timing
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    positionCorners(true);
+                    positionCorners(1, true);
+                    positionCorners(2, true);
+                    
+                    // Remove the new-word class after a short delay
+                    // This allows transitions to work again for future animations
+                    setTimeout(() => {
+                        wordContainer1.classList.remove('new-word');
+                        wordContainer2.classList.remove('new-word');
+                    }, 100);
                 });
             });
         }
-
-        function crushWord() {
-            if (isAnimating) return; // Prevent multiple animations
+        
+        // Function to handle word selection
+        function handleWordSelection(wordIndex) {
+            if (isAnimating) return;
+            
+            selectedWordIndex = wordIndex;
+            const otherWordIndex = wordIndex === 1 ? 2 : 1;
+            
+            // Start the crush animation for the selected word
+            crushSelectedWord(wordIndex, otherWordIndex);
+        }
+        
+        // Function to crush the selected word
+        function crushSelectedWord(wordIndex, otherWordIndex) {
+            if (isAnimating) return;
             isAnimating = true;
             
-            const wordContainer = document.getElementById('activeWord');
-            document.getElementById('crushBtn').disabled = true;
+            const wordContainer = document.getElementById(`activeWord${wordIndex}`);
+            const otherWordContainer = document.getElementById(`activeWord${otherWordIndex}`);
             
             // Add crushing class to body for faster animation
             document.body.classList.add('crushing');
             document.body.classList.remove('resetting');
             
             // First animate the corners to the crushed position
-            positionCorners(false);
+            positionCorners(wordIndex, false);
             
             // After a delay, crush the word
             setTimeout(() => {
@@ -356,83 +464,165 @@
                     letter.style.setProperty('--opacity', opacity);
                 });
                 
-                // Update button state
-                document.getElementById('crushBtn').textContent = 'DROP IT!';
-                isCrushed = true;
+                if (wordIndex === 1) {
+                    isCrushed1 = true;
+                } else {
+                    isCrushed2 = true;
+                }
                 
-                // After a delay, enable the button again
+                // Start fading the other word after the crush animation
                 setTimeout(() => {
-                    document.getElementById('crushBtn').disabled = false;
-                    isAnimating = false;
-                }, 400);
+                    otherWordContainer.classList.add('fading');
+                }, 200);
+                
+                // After a delay, create the falling word
+                setTimeout(() => {
+                    createFallingWord(wordIndex);
+                }, 400); // Reduced from 400ms to 250ms for a more immediate transition
             }, cornerConfig.animationDelay);
         }
-
-        function createFallingWord() {
-            if (isAnimating) return; // Prevent multiple animations
-            isAnimating = true;
-            
-            const wordContainer = document.getElementById('activeWord');
+        
+        function createFallingWord(wordIndex) {
+            const wordContainer = document.getElementById(`activeWord${wordIndex}`);
             const rect = wordContainer.getBoundingClientRect();
+            const word = wordIndex === 1 ? currentWord1 : currentWord2;
             const color = '#FFD700';
             
-            document.getElementById('crushBtn').disabled = true;
+            // CRITICAL: Store letter transforms BEFORE hiding the word
+            const letterTransforms = Array.from(wordContainer.querySelectorAll('.letter')).map(letter => ({
+                rotation: letter.style.getPropertyValue('--rotation'),
+                skewX: letter.style.getPropertyValue('--skewX'),
+                skewY: letter.style.getPropertyValue('--skewY'),
+                scaleY: letter.style.getPropertyValue('--scaleY'),
+                translateX: letter.style.getPropertyValue('--translateX'),
+                translateY: letter.style.getPropertyValue('--translateY'),
+                opacity: letter.style.getPropertyValue('--opacity')
+            }));
             
-            // Add resetting class to body for slower animation
+            // Create the physics body BEFORE hiding the word
+            const body = Bodies.rectangle(
+                rect.x + rect.width / 2,
+                rect.y + rect.height / 2,
+                rect.width,
+                rect.height,
+                {
+                    render: {
+                        fillStyle: 'transparent',
+                        lineWidth: 0
+                    },
+                    restitution: 0.6,
+                    friction: 0.1,
+                    frictionAir: 0.001,
+                    word: word,
+                    color: color,
+                    crushed: true,
+                    letterTransforms: letterTransforms
+                }
+            );
+
+            // Add random initial velocities
+            Matter.Body.setVelocity(body, {
+                x: (Math.random() - 0.5) * 5,
+                y: -2
+            });
+            Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.2);
+            
+            // CRITICAL: Hide the word with NO TRANSITION immediately before adding the body
+            wordContainer.classList.add('new-word'); // Disable transitions
+            wordContainer.style.visibility = 'hidden';
+            wordContainer.style.opacity = '0';
+            
+            // Add the body to the world in the same frame
+            World.add(engine.world, body);
+            
+            // Now start the corner animation
             document.body.classList.add('resetting');
             document.body.classList.remove('crushing');
+            positionCorners(wordIndex, true);
             
-            // First animate the corners back to expanded position
-            positionCorners(true);
-            
-            // Create a body for the word after a delay
+            // Display new words after the corner animation completes
             setTimeout(() => {
-                // Create a body for the word
-                const body = Bodies.rectangle(
-                    rect.x + rect.width / 2,
-                    rect.y + rect.height / 2,
-                    rect.width,
-                    rect.height,
-                    {
-                        render: {
-                            fillStyle: 'transparent',
-                            lineWidth: 0
-                        },
-                        restitution: 0.6,
-                        friction: 0.1,
-                        frictionAir: 0.001,
-                        word: currentWord,
-                        color: color,
-                        crushed: true,
-                        // Store the letter transformations
-                        letterTransforms: Array.from(wordContainer.querySelectorAll('.letter')).map(letter => ({
-                            rotation: letter.style.getPropertyValue('--rotation'),
-                            skewX: letter.style.getPropertyValue('--skewX'),
-                            skewY: letter.style.getPropertyValue('--skewY'),
-                            scaleY: letter.style.getPropertyValue('--scaleY'),
-                            translateX: letter.style.getPropertyValue('--translateX'),
-                            translateY: letter.style.getPropertyValue('--translateY'),
-                            opacity: letter.style.getPropertyValue('--opacity')
-                        }))
-                    }
-                );
-
-                // Add random initial velocities
-                Matter.Body.setVelocity(body, {
-                    x: (Math.random() - 0.5) * 5,
-                    y: -2
-                });
-                Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.2);
+                // Reset visibility for both word containers
+                document.getElementById('activeWord1').style.visibility = 'visible';
+                document.getElementById('activeWord1').style.opacity = '1';
+                document.getElementById('activeWord2').style.visibility = 'visible';
+                document.getElementById('activeWord2').style.opacity = '1';
                 
-                World.add(engine.world, body);
-                
-                // Display a new word with proper positioning
-                displayNewWord();
-                
-                // Re-enable the button
-                document.getElementById('crushBtn').disabled = false;
+                // Display new words
+                displayNewWords();
                 isAnimating = false;
             }, cornerConfig.resetDelay);
+        }
+
+        // Function to position the L corners around the active word
+        function positionCorners(wordIndex, expanded = true) {
+            const wordContainer = document.getElementById(`activeWord${wordIndex}`);
+            const rect = wordContainer.getBoundingClientRect();
+            
+            // Calculate the center of the word
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Calculate the square dimensions
+            const squareSize = expanded ? cornerConfig.expandedSize : cornerConfig.compactSize;
+            const halfSize = squareSize / 2;
+            
+            // Calculate the corners of the square
+            const left = centerX - halfSize;
+            const right = centerX + halfSize;
+            const top = centerY - halfSize;
+            const bottom = centerY + halfSize;
+            
+            // Top Left Corner (long horizontal, short vertical)
+            const topLeftH = document.getElementById(`topLeftH${wordIndex}`);
+            const topLeftV = document.getElementById(`topLeftV${wordIndex}`);
+            topLeftH.style.top = `${top}px`;
+            topLeftH.style.left = `${left}px`;
+            topLeftH.style.width = `${cornerConfig.longSegment}px`;
+            
+            topLeftV.style.top = `${top}px`;
+            topLeftV.style.left = `${left}px`;
+            topLeftV.style.height = `${cornerConfig.shortSegment}px`;
+            
+            // Top Right Corner (short horizontal, long vertical)
+            const topRightH = document.getElementById(`topRightH${wordIndex}`);
+            const topRightV = document.getElementById(`topRightV${wordIndex}`);
+            topRightH.style.top = `${top}px`;
+            topRightH.style.right = `${window.innerWidth - right}px`;
+            topRightH.style.width = `${cornerConfig.shortSegment}px`;
+            
+            topRightV.style.top = `${top}px`;
+            topRightV.style.right = `${window.innerWidth - right}px`;
+            topRightV.style.height = `${cornerConfig.longSegment}px`;
+            
+            // Bottom Right Corner (long horizontal, short vertical)
+            const bottomRightH = document.getElementById(`bottomRightH${wordIndex}`);
+            const bottomRightV = document.getElementById(`bottomRightV${wordIndex}`);
+            bottomRightH.style.bottom = `${window.innerHeight - bottom}px`;
+            bottomRightH.style.right = `${window.innerWidth - right}px`;
+            bottomRightH.style.width = `${cornerConfig.longSegment}px`;
+            
+            bottomRightV.style.bottom = `${window.innerHeight - bottom}px`;
+            bottomRightV.style.right = `${window.innerWidth - right}px`;
+            bottomRightV.style.height = `${cornerConfig.shortSegment}px`;
+            
+            // Bottom Left Corner (short horizontal, long vertical)
+            const bottomLeftH = document.getElementById(`bottomLeftH${wordIndex}`);
+            const bottomLeftV = document.getElementById(`bottomLeftV${wordIndex}`);
+            bottomLeftH.style.bottom = `${window.innerHeight - bottom}px`;
+            bottomLeftH.style.left = `${left}px`;
+            bottomLeftH.style.width = `${cornerConfig.shortSegment}px`;
+            
+            bottomLeftV.style.bottom = `${window.innerHeight - bottom}px`;
+            bottomLeftV.style.left = `${left}px`;
+            bottomLeftV.style.height = `${cornerConfig.longSegment}px`;
+            
+            // Position the clickable area to match the square
+            const clickArea = document.getElementById(`clickArea${wordIndex}`);
+            clickArea.style.left = `${left}px`;
+            clickArea.style.top = `${top}px`;
+            clickArea.style.width = `${squareSize}px`;
+            clickArea.style.height = `${squareSize}px`;
         }
 
         // Custom render function for the words
@@ -441,7 +631,15 @@
             const context = render.context;
             const bodies = Matter.Composite.allBodies(engine.world);
             
-            context.font = 'bold 48px Arial';
+            // Match the CSS font exactly: 3rem bold
+            // 3rem is approximately 48px, but let's make it exact
+            // Get the computed style from the active word to match exactly
+            const computedStyle = window.getComputedStyle(document.getElementById('activeWord1'));
+            const fontSize = computedStyle.fontSize;
+            const fontWeight = computedStyle.fontWeight;
+            const fontFamily = computedStyle.fontFamily || 'Arial';
+            
+            context.font = `${fontWeight} ${fontSize} ${fontFamily}`;
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             
@@ -486,13 +684,16 @@
                             context.scale(1, scaleY);
                             context.translate(translateX, translateY);
                             
+                            // Use exact gold color from CSS
                             context.fillStyle = `rgba(255, 215, 0, ${opacity})`;
                             context.fillText(char, 0, 0);
                             
                             context.restore();
                         });
                     } else {
-                        context.fillStyle = body.color;
+                        // For normal words, just render the whole word
+                        // Use exact gold color from CSS
+                        context.fillStyle = '#FFD700';
                         context.fillText(body.word, 0, 0);
                     }
                     
@@ -501,24 +702,50 @@
             });
         });
 
-        // Button click handler
-        document.getElementById('crushBtn').addEventListener('click', function() {
-            if (!isAnimating) {
-                if (!isCrushed) {
-                    crushWord();
-                } else {
-                    createFallingWord();
-                }
-            }
-        });
+        // Wait for DOM to be fully loaded before attaching event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Word container click handlers
+            document.getElementById('activeWord1').addEventListener('click', function(event) {
+                console.log('Word 1 clicked');
+                event.stopPropagation();
+                handleWordSelection(1);
+            });
 
-        // Initial setup
-        displayNewWord();
+            document.getElementById('activeWord2').addEventListener('click', function(event) {
+                console.log('Word 2 clicked');
+                event.stopPropagation();
+                handleWordSelection(2);
+            });
+
+            // Clickable area click handlers
+            document.getElementById('clickArea1').addEventListener('click', function(event) {
+                console.log('Click area 1 clicked');
+                event.stopPropagation();
+                handleWordSelection(1);
+            });
+
+            document.getElementById('clickArea2').addEventListener('click', function(event) {
+                console.log('Click area 2 clicked');
+                event.stopPropagation();
+                handleWordSelection(2);
+            });
+
+            // Initial setup
+            displayNewWords();
+            
+            // Add click logging for debugging
+            document.addEventListener('click', function(e) {
+                console.log('Click detected on:', e.target);
+            });
+        });
 
         // Run the engine and renderer
         Engine.run(engine);
         Render.run(render);
-
+        
+        // Display initial words
+        displayNewWords();
+        
         // Handle window resize
         window.addEventListener('resize', () => {
             render.canvas.width = window.innerWidth;
@@ -530,7 +757,8 @@
             
             // Reposition corners based on current state
             if (!isAnimating) {
-                positionCorners(!isCrushed);
+                positionCorners(1, !isCrushed1);
+                positionCorners(2, !isCrushed2);
             }
         });
     </script>
