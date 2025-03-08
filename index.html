@@ -254,6 +254,25 @@
         #clickArea1:hover, #clickArea2:hover {
             background-color: rgba(255, 215, 0, 0.1);
         }
+        
+        /* L-chain background */
+        .l-chain-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Just above the physics canvas but below everything else */
+            pointer-events: none; /* Don't block clicks */
+            overflow: visible; /* Allow the pattern to extend beyond the container */
+        }
+        
+        /* L-chain pattern */
+        .l-shape {
+            stroke: #FFD700;
+            stroke-width: 10; /* Thicker lines to match the corner L's */
+            fill: none;
+        }
     </style>
 </head>
 <body>
@@ -746,6 +765,87 @@
         // Display initial words
         displayNewWords();
         
+        // Create the L-chain pattern for the background
+        function createLChainPattern() {
+            // Create the background div if it doesn't exist
+            let container = document.querySelector('.l-chain-background');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'l-chain-background';
+                document.body.insertBefore(container, document.body.firstChild);
+            }
+            
+            // Calculate number of repeats based on window width
+            // Use 320px spacing to match reference implementation, but scale down by 50%
+            const unitWidth = 160; // 320 * 0.5 = 160
+            const numRepeats = Math.ceil(window.innerWidth / unitWidth) + 15; // Add extra to ensure full coverage
+            
+            // Create a single SVG container
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 3200 400");
+            svg.setAttribute("width", "100%");
+            svg.setAttribute("height", "150px"); // Reduced height (50% of 300px)
+            svg.style.overflow = "visible";
+            
+            // Position the SVG at the same vertical level as the word boxes
+            const wordContainer = document.querySelector('.word-container');
+            if (wordContainer) {
+                const rect = wordContainer.getBoundingClientRect();
+                svg.style.position = "absolute";
+                svg.style.top = `${rect.top + rect.height/2 - 75}px`; // Center vertically with the words (75 is half of 150px height)
+                svg.style.left = "-480px"; // Half of previous value (-960px)
+                svg.style.width = "calc(100% + 960px)"; // Half of previous value (1920px)
+            }
+            
+            // Add multiple pattern units to the single SVG
+            for (let i = -5; i < numRepeats; i++) {
+                // Calculate x-offset for each unit
+                const xOffset = i * unitWidth;
+                
+                // Create a group for each pair to apply rotation individually
+                const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                // Scale down the group to 50% of its original size
+                group.setAttribute("transform", `translate(${xOffset}, 0) rotate(-45, 60, 100) scale(0.5)`);
+                
+                // First L shape
+                const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path1.setAttribute("class", "l-shape");
+                path1.setAttribute("d", "M 80 80 L 80 240 L 150 240");
+                path1.setAttribute("stroke", "rgba(255, 215, 0, 0.4)");
+                path1.setAttribute("stroke-width", "10");
+                path1.setAttribute("fill", "none");
+                
+                // Second L shape
+                const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path2.setAttribute("class", "l-shape");
+                path2.setAttribute("d", "M 140 160 L 220 160 L 220 320");
+                path2.setAttribute("stroke", "rgba(255, 215, 0, 0.4)");
+                path2.setAttribute("stroke-width", "10");
+                path2.setAttribute("fill", "none");
+                
+                group.appendChild(path1);
+                group.appendChild(path2);
+                svg.appendChild(group);
+            }
+            
+            // Clear any existing content and add the new SVG
+            container.innerHTML = '';
+            container.appendChild(svg);
+        }
+        
+        // Create the L-chain pattern
+        createLChainPattern();
+        
+        // Create a ResizeObserver to update the L-chain pattern when the word container position changes
+        const wordContainer = document.querySelector('.word-container');
+        if (wordContainer) {
+            const resizeObserver = new ResizeObserver(() => {
+                // Update the L-chain pattern position
+                createLChainPattern();
+            });
+            resizeObserver.observe(wordContainer);
+        }
+        
         // Handle window resize
         window.addEventListener('resize', () => {
             render.canvas.width = window.innerWidth;
@@ -760,6 +860,9 @@
                 positionCorners(1, !isCrushed1);
                 positionCorners(2, !isCrushed2);
             }
+            
+            // Recreate the L-chain pattern to fit the new window size
+            createLChainPattern();
         });
     </script>
 </body>
