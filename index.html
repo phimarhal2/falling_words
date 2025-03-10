@@ -273,6 +273,29 @@
             stroke-width: 10; /* Thicker lines to match the corner L's */
             fill: none;
         }
+        
+        /* Blinking effect */
+        .blink {
+            animation: blink-animation 0.6s; /* Fade in and out */
+        }
+        
+        /* Rising effect */
+        .rise {
+            animation: rise-animation 0.6s ease-in-out; /* Slower lift */
+        }
+        
+        @keyframes blink-animation {
+            0% { opacity: 1; }
+            25% { opacity: 0.5; }
+            50% { opacity: 1; }
+            75% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes rise-animation {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); } /* Softer lift */
+        }
     </style>
 </head>
 <body>
@@ -425,14 +448,27 @@
             });
         }
         
-        // Function to handle word selection
+                // Function to handle word selection
         function handleWordSelection(wordIndex) {
-            if (isAnimating) return;
-            
-            selectedWordIndex = wordIndex;
+            // Determine the other word index
             const otherWordIndex = wordIndex === 1 ? 2 : 1;
-            
-            // Start the crush animation for the selected word
+
+            // Add blinking effect to the other word
+            const otherWord = document.getElementById(`activeWord${otherWordIndex}`);
+            otherWord.classList.add('blink');
+
+            // Ensure the blink effect is visible
+            setTimeout(() => {
+                otherWord.classList.remove('blink');
+                otherWord.classList.add('rise');
+
+                // Remove the rise class after the animation completes
+                setTimeout(() => {
+                    otherWord.classList.remove('rise');
+                }, 600); // Match duration of rise animation
+            }, 600); // Delay before starting the rise effect
+
+            // Handle the crushing of the selected word
             crushSelectedWord(wordIndex, otherWordIndex);
         }
         
