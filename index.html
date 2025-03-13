@@ -539,12 +539,14 @@
         
         function createFallingWord(wordIndex) {
             const wordContainer = document.getElementById(`activeWord${wordIndex}`);
-            const rect = wordContainer.getBoundingClientRect();
             const word = wordIndex === 1 ? currentWord1 : currentWord2;
             const color = '#FFD700';
             
-            // CRITICAL: Store letter transforms BEFORE hiding the word
-            const letterTransforms = Array.from(wordContainer.querySelectorAll('.letter')).map(letter => ({
+            // Get all letter elements
+            const letterElements = Array.from(wordContainer.querySelectorAll('.letter'));
+            
+            // Store letter transforms
+            const letterTransforms = letterElements.map(letter => ({
                 rotation: letter.style.getPropertyValue('--rotation'),
                 skewX: letter.style.getPropertyValue('--skewX'),
                 skewY: letter.style.getPropertyValue('--skewY'),
@@ -554,12 +556,29 @@
                 opacity: letter.style.getPropertyValue('--opacity')
             }));
             
-            // Create the physics body BEFORE hiding the word
+            // Calculate the minimum bounding box by looking at individual letters
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            
+            letterElements.forEach(letter => {
+                const letterRect = letter.getBoundingClientRect();
+                minX = Math.min(minX, letterRect.left);
+                minY = Math.min(minY, letterRect.top);
+                maxX = Math.max(maxX, letterRect.right);
+                maxY = Math.max(maxY, letterRect.bottom);
+            });
+            
+            // Calculate center, width, and height from letter measurements
+            const width = maxX - minX;
+            const height = maxY - minY;
+            const centerX = minX + width / 2;
+            const centerY = minY + height / 2;
+            
+            // Create the physics body with the calculated dimensions
             const body = Bodies.rectangle(
-                rect.x + rect.width / 2,
-                rect.y + rect.height / 2,
-                rect.width * 0.5,
-                rect.height * 0.5,
+                centerX,
+                centerY,
+                width * 0.9, // Slightly smaller than the full width for tighter fit
+                height * 0.9, // Slightly smaller than the full height for tighter fit
                 {
                     render: {
                         fillStyle: 'transparent',
