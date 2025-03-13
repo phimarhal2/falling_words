@@ -558,15 +558,15 @@
             const body = Bodies.rectangle(
                 rect.x + rect.width / 2,
                 rect.y + rect.height / 2,
-                rect.width,
-                rect.height,
+                rect.width * 0.5,
+                rect.height * 0.5,
                 {
                     render: {
                         fillStyle: 'transparent',
                         lineWidth: 0
                     },
-                    restitution: 0.6,
-                    friction: 0.1,
+                    restitution: 0.8,
+                    friction: 0.01,
                     frictionAir: 0.001,
                     word: word,
                     color: color,
