@@ -270,7 +270,7 @@
         /* L-chain pattern */
         .l-shape {
             stroke: #FFD700;
-            stroke-width: 10; /* Thicker lines to match the corner L's */
+            stroke-width: 16; /* Thicker lines to match the corner L's */
             fill: none;
         }
         
@@ -833,29 +833,35 @@
                 container.className = 'l-chain-background';
                 document.body.insertBefore(container, document.body.firstChild);
             }
-            
+
             // Calculate number of repeats based on window width
-            // Use 320px spacing to match reference implementation, but scale down by 50%
             const unitWidth = 160; // 320 * 0.5 = 160
             const numRepeats = Math.ceil(window.innerWidth / unitWidth) + 15; // Add extra to ensure full coverage
-            
+
             // Create a single SVG container
             const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             svg.setAttribute("viewBox", "0 0 3200 400");
             svg.setAttribute("width", "100%");
             svg.setAttribute("height", "150px"); // Reduced height (50% of 300px)
             svg.style.overflow = "visible";
-            
+
             // Position the SVG at the same vertical level as the word boxes
             const wordContainer = document.querySelector('.word-container');
             if (wordContainer) {
                 const rect = wordContainer.getBoundingClientRect();
+                // Center the L-chain vertically with the words
+                // The 75px is half of the SVG's height (150px)
+                // The 20px offset is to position it slightly above the words
                 svg.style.position = "absolute";
-                svg.style.top = `${rect.top + rect.height/2 - 75}px`; // Center vertically with the words (75 is half of 150px height)
+                svg.style.top = `${rect.top + rect.height/2 - 32}px`;
                 svg.style.left = "-480px"; // Half of previous value (-960px)
                 svg.style.width = "calc(100% + 960px)"; // Half of previous value (1920px)
             }
-            
+
+            // Clear any existing content and add the new SVG
+            container.innerHTML = '';
+            container.appendChild(svg);
+
             // Add multiple pattern units to the single SVG
             for (let i = -5; i < numRepeats; i++) {
                 // Calculate x-offset for each unit
@@ -886,10 +892,6 @@
                 group.appendChild(path2);
                 svg.appendChild(group);
             }
-            
-            // Clear any existing content and add the new SVG
-            container.innerHTML = '';
-            container.appendChild(svg);
         }
         
         // Create the L-chain pattern
