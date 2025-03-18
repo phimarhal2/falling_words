@@ -6,10 +6,13 @@
     <title>Word Crusher Animation</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <style>
+        :root {
+  --background-color: #1a1a1a; /* Or whatever color you want */
+}
         body {
             margin: 0;
             padding: 0;
-            background-color: #121212;
+            background-color: var(--background-color);
             color: #FFD700;
             font-family: 'Impact', sans-serif;
             overflow: hidden;
@@ -115,6 +118,20 @@
             background: transparent;
             z-index: 999;
             transition: none;
+        }
+
+        /* Create solid box backgrounds */
+        .box-background {
+            position: absolute;
+            background-color: #2f2305;
+            z-index: 2; /* Above the L-chain (z-index: 1) but below the corners (z-index: 999) */
+            transition: all 0.5s ease-out; /* Match the reset transition timing */
+            pointer-events: none; /* Don't interfere with click events */
+        }
+        
+        /* When crushing, use faster transition */
+        .crushing .box-background {
+            transition: all 0.1s ease-in; /* Match the crushing transition timing */
         }
         
         /* Specific transitions for crushing (faster) */
@@ -303,7 +320,10 @@
         <div id="activeWord1" class="active-word"></div>
         <div id="activeWord2" class="active-word"></div>
     </div>
+
     <div class="container">
+        <div id="boxBackground1" class="box-background"></div>
+        <div id="boxBackground2" class="box-background"></div>
         <!-- L-shaped corners for word 1 -->
         <div id="topLeftH1" class="l-corner l-corner-h"></div>
         <div id="topLeftV1" class="l-corner l-corner-v"></div>
@@ -346,7 +366,7 @@
                 width: window.innerWidth,
                 height: window.innerHeight,
                 wireframes: false,
-                background: '#1a1a1a'
+                background: getComputedStyle(document.documentElement).getPropertyValue('--background-color').trim()
             }
         });
 
@@ -632,6 +652,31 @@
             }, cornerConfig.resetDelay);
         }
 
+        // Update the position and size of the box backgrounds to match the L corners
+        function updateBoxBackgrounds(wordIndex, expanded = true) {
+            const squareSize = expanded ? cornerConfig.expandedSize : cornerConfig.compactSize;
+            const wordContainer = document.getElementById(`activeWord${wordIndex}`);
+            const rect = wordContainer.getBoundingClientRect();
+            
+            // Calculate the center of the word
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Calculate the square dimensions
+            const halfSize = squareSize / 2;
+            
+            // Calculate the corners of the square
+            const left = centerX - halfSize;
+            const top = centerY - halfSize;
+            
+            // Position and size the box background
+            const boxBackground = document.getElementById(`boxBackground${wordIndex}`);
+            boxBackground.style.left = `${left}px`;
+            boxBackground.style.top = `${top}px`;
+            boxBackground.style.width = `${squareSize}px`;
+            boxBackground.style.height = `${squareSize}px`;
+        }
+
         // Function to position the L corners around the active word
         function positionCorners(wordIndex, expanded = true) {
             const wordContainer = document.getElementById(`activeWord${wordIndex}`);
@@ -701,6 +746,8 @@
             clickArea.style.top = `${top}px`;
             clickArea.style.width = `${squareSize}px`;
             clickArea.style.height = `${squareSize}px`;
+
+            updateBoxBackgrounds(wordIndex, expanded);
         }
 
         // Custom render function for the words
